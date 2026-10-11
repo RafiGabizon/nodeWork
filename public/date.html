@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>דייט? 💕</title>
+<style>
+  :root {
+    --pink: #ff5c8a;
+    --pink-dark: #e63e72;
+    --bg1: #ffe3ec;
+    --bg2: #ffd1e0;
+    --ink: #4a2433;
+    --card: #fffafc;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Heebo", "Assistant", "Segoe UI", Arial, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, var(--bg1), var(--bg2) 60%, #ffc2d6);
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  /* לבבות מרחפים ברקע */
+  .hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .heart {
+    position: absolute; bottom: -40px;
+    animation: floatUp linear infinite;
+    opacity: .6;
+  }
+  @keyframes floatUp {
+    to { transform: translateY(-115vh) rotate(25deg); opacity: 0; }
+  }
+
+  .card {
+    position: relative; z-index: 1;
+    background: var(--card);
+    width: min(480px, 100%);
+    border-radius: 28px;
+    padding: 32px 24px 36px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(230, 62, 114, .25);
+  }
+  .face {
+    font-size: 84px; line-height: 1;
+    display: inline-block;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-10px) rotate(4deg); }
+  }
+  h1 { font-size: clamp(26px, 6vw, 34px); margin: 12px 0 6px; color: var(--pink-dark); }
+  p.sub { margin: 0 0 24px; font-size: 18px; opacity: .8; }
+
+  .buttons { display: flex; gap: 16px; justify-content: center; align-items: center; min-height: 64px; flex-wrap: wrap; }
+  button, .btn {
+    font-family: inherit; font-size: 20px; font-weight: 700;
+    border: 0; border-radius: 999px; padding: 14px 28px; cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .yes {
+    background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+    color: #fff; box-shadow: 0 8px 20px rgba(230, 62, 114, .4);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .yes:hover { transform: scale(1.08); }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  .no { background: #e9dfe3; color: #6b5560; }
+  .no.fleeing {
+    position: fixed; z-index: 10;
+    transition: left .25s cubic-bezier(.3,1.6,.5,1), top .25s cubic-bezier(.3,1.6,.5,1);
+  }
+  .taunt { min-height: 28px; margin-top: 18px; font-size: 17px; color: var(--pink-dark); font-weight: 600; }
+
+  .hidden { display: none !important; }
+
+  /* שלב בחירת התאריך */
+  #pick h2 { color: var(--pink-dark); margin: 8px 0 4px; font-size: 28px; }
+  label { display: block; text-align: right; font-weight: 700; margin: 16px 0 6px; }
+  input {
+    width: 100%; font-family: inherit; font-size: 18px; padding: 12px 14px;
+    border: 2px solid #ffc2d6; border-radius: 14px; background: #fff; color: var(--ink);
+  }
+  input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 4px rgba(255, 92, 138, .2); }
+  .actions { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+  .btn.alt { background: #fff; color: var(--pink-dark); border: 2px solid var(--pink); }
+  .btn.main { background: linear-gradient(135deg, var(--pink), var(--pink-dark)); color: #fff; box-shadow: 0 8px 20px rgba(230,62,114,.35); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .done { margin-top: 18px; font-weight: 700; color: #2e8b57; min-height: 24px; }
+
+  .confetti { position: fixed; top: -20px; z-index: 20; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .face, .yes, .heart { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="hearts" id="hearts" aria-hidden="true"></div>
+
+  <main class="card">
+    <!-- שלב 1: השאלה -->
+    <section id="ask">
+      <div class="face" id="face">🥰</div>
+      <h1>אהובה שלי, בא לך לצאת איתי לדייט?</h1>
+      <p class="sub">רק את, אני, ואיזה ערב כיפי ✨</p>
+      <div class="buttons" id="buttons">
+        <button class="yes" id="yes">כן! כאילו… ברור, מה זה השאלה הזאת 😏</button>
+        <button class="no" id="no">לא</button>
+      </div>
+      <div class="taunt" id="taunt" aria-live="polite"></div>
+    </section>
+
+    <!-- שלב 2: בחירת תאריך ושעה -->
+    <section id="pick" class="hidden">
+      <div class="face">🎉</div>
+      <h2>יששש! ידעתי! 💖</h2>
+      <p class="sub">עכשיו תבחרי מתי נוח לך:</p>
+
+      <label for="when">תאריך ושעה</label>
+      <input type="datetime-local" id="when">
+
+      <label for="where">איפה? (אופציונלי)</label>
+      <input type="text" id="where" placeholder="מסעדה, חוף, ספה עם פיצה…">
+
+      <div class="actions">
+        <button class="btn main" id="google" disabled>📅 הוסיפי ליומן גוגל</button>
+        <button class="btn alt" id="ics" disabled>⬇️ הורדת קובץ ליומן (אפל / אאוטלוק)</button>
+      </div>
+      <div class="done" id="done" aria-live="polite"></div>
+    </section>
+  </main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ---------- לבבות ברקע ---------- */
+  var hearts = $("hearts"), icons = ["💗", "💖", "💕", "🌸", "💘"];
+  for (var i = 0; i < 22; i++) {
+    var h = document.createElement("span");
+    h.className = "heart";
+    h.textContent = icons[i % icons.length];
+    h.style.left = Math.random() * 100 + "vw";
+    h.style.fontSize = (16 + Math.random() * 26) + "px";
+    h.style.animationDuration = (8 + Math.random() * 10) + "s";
+    h.style.animationDelay = (-Math.random() * 14) + "s";
+    hearts.appendChild(h);
+  }
+
+  /* ---------- כפתור "לא" שבורח ---------- */
+  var no = $("no"), taunt = $("taunt"), face = $("face");
+  var taunts = [
+    "אופס, החלקת 😉",
+    "כמעט! 😜",
+    "הכפתור הזה מפחד ממך 🙈",
+    "תנסי שוב… או שלא 😇",
+    "הוא מהיר מדי בשבילך 🏃‍♂️",
+    "יש רק תשובה אחת נכונה 😘",
+    "נו באמת, ככה מתנהגים לבעל כזה חמוד? 🥺",
+    "הלב אומר כן, האצבע טועה 💘"
+  ];
+  var faces = ["😏", "🙈", "😜", "🥺", "😂", "😘"];
+  var count = 0;
+
+  function flee() {
+    var w = no.offsetWidth, h = no.offsetHeight, pad = 12;
+    var maxX = window.innerWidth - w - pad, maxY = window.innerHeight - h - pad;
+    var x, y, tries = 0, r = no.getBoundingClientRect();
+    // מוודאים שהכפתור קופץ רחוק מהמיקום הנוכחי
+    do {
+      x = pad + Math.random() * Math.max(0, maxX - pad);
+      y = pad + Math.random() * Math.max(0, maxY - pad);
+      tries++;
+    } while (tries < 12 && Math.hypot(x - r.left, y - r.top) < 150);
+    no.classList.add("fleeing");
+    no.style.left = x + "px";
+    no.style.top = y + "px";
+    taunt.textContent = taunts[count % taunts.length];
+    face.textContent = faces[count % faces.length];
+    count++;
+  }
+
+  // שומר את המקום של הכפתור בשורה כדי שהפריסה לא תקפוץ
+  var placeholder = null;
+  function arm() {
+    if (!placeholder) {
+      placeholder = document.createElement("span");
+      placeholder.style.width = no.offsetWidth + "px";
+      placeholder.style.height = no.offsetHeight + "px";
+      no.parentNode.insertBefore(placeholder, no);
+    }
+    flee();
+  }
+  ["mouseenter", "pointerdown", "touchstart", "focus", "click"].forEach(function (ev) {
+    no.addEventListener(ev, function (e) { e.preventDefault(); arm(); }, { passive: false });
+  });
+  // בורח עוד לפני שמגיעים אליו
+  document.addEventListener("mousemove", function (e) {
+    if (!no.classList.contains("fleeing")) return;
+    var r = no.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (Math.hypot(e.clientX - cx, e.clientY - cy) < 90) flee();
+  });
+
+  /* ---------- קונפטי ---------- */
+  function confetti() {
+    var pieces = ["💖", "🎉", "✨", "💕", "🌹", "🥂"];
+    for (var i = 0; i < 60; i++) {
+      var c = document.createElement("span");
+      c.className = "confetti";
+      c.textContent = pieces[i % pieces.length];
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.fontSize = (18 + Math.random() * 22) + "px";
+      c.style.animationDuration = (2 + Math.random() * 2.5) + "s";
+      c.style.animationDelay = Math.random() * 0.8 + "s";
+      document.body.appendChild(c);
+      setTimeout(function (el) { el.remove(); }.bind(null, c), 6000);
+    }
+  }
+
+  /* ---------- כן! ---------- */
+  $("yes").addEventListener("click", function () {
+    no.classList.add("hidden");
+    $("ask").classList.add("hidden");
+    $("pick").classList.remove("hidden");
+    confetti();
+
+    // ברירת מחדל: מחר ב-20:00
+    var d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(20, 0, 0, 0);
+    $("when").value = toLocalInput(d);
+    $("when").min = toLocalInput(new Date());
+    sync();
+  });
+
+  /* ---------- יומן ---------- */
+  var DURATION_HOURS = 3;
+  var TITLE = "דייט עם בעלי האהוב 💕";
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function toLocalInput(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+           "T" + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  }
+  function toCal(d) { // YYYYMMDDTHHMMSS (שעה מקומית, ללא אזור זמן)
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+           "T" + pad2(d.getHours()) + pad2(d.getMinutes()) + "00";
+  }
+  function getTimes() {
+    var v = $("when").value;
+    if (!v) return null;
+    var start = new Date(v);
+    if (isNaN(start)) return null;
+    return { start: start, end: new Date(start.getTime() + DURATION_HOURS * 3600 * 1000) };
+  }
+  function sync() {
+    var ok = !!getTimes();
+    $("google").disabled = !ok;
+    $("ics").disabled = !ok;
+  }
+  $("when").addEventListener("input", sync);
+
+  function showDone(t) {
+    var s = t.start.toLocaleString("he-IL", { dateStyle: "full", timeStyle: "short" });
+    $("done").textContent = "נקבע! " + s + " 💘";
+  }
+
+  $("google").addEventListener("click", function () {
+    var t = getTimes(); if (!t) return;
+    var url = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      "&text=" + encodeURIComponent(TITLE) +
+      "&dates=" + toCal(t.start) + "/" + toCal(t.end) +
+      "&details=" + encodeURIComponent("הכי מצפה לזה! 😘") +
+      "&location=" + encodeURIComponent($("where").value);
+    window.open(url, "_blank", "noopener");
+    showDone(t);
+  });
+
+  function icsEscape(s) {
+    return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  }
+  $("ics").addEventListener("click", function () {
+    var t = getTimes(); if (!t) return;
+    var stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    var lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Date Invitation//HE",
+      "CALSCALE:GREGORIAN",
+      "BEGIN:VEVENT",
+      "UID:date-" + Date.now() + "@date-invitation",
+      "DTSTAMP:" + stamp,
+      "DTSTART:" + toCal(t.start),
+      "DTEND:" + toCal(t.end),
+      "SUMMARY:" + icsEscape(TITLE),
+      "DESCRIPTION:" + icsEscape("הכי מצפה לזה! 😘"),
+      "LOCATION:" + icsEscape($("where").value),
+      "BEGIN:VALARM",
+      "TRIGGER:-PT2H",
+      "ACTION:DISPLAY",
+      "DESCRIPTION:" + icsEscape("הדייט שלנו בעוד שעתיים! 💕"),
+      "END:VALARM",
+      "END:VEVENT",
+      "END:VCALENDAR"
+    ];
+    var blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "date.ics";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    showDone(t);
+  });
+})();
+</script>
+</body>
+</html>
